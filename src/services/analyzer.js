@@ -12,34 +12,122 @@ import { analyzeCodeQuality } from '../utils/code-quality.js';
  * @returns {Promise<Object>} Analysis results
  */
 export async function analyzeProject(projectPath, options) {
+  console.log(`Analyzing project at: ${projectPath}`);
+  
   // If GitHub URL is provided, clone the repository first
   if (options.github) {
     projectPath = await cloneRepository(options.github);
   }
   
-  // Get all files in the project
-  const files = await glob('**/*', { 
-    cwd: projectPath, 
-    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.git/**'],
-    nodir: true,
-    dot: true,
-    maxDepth: parseInt(options.depth) || 3
-  });
+  try {
+    // Normalize path for cross-platform compatibility
+    projectPath = path.normalize(projectPath);
+    
+    console.log(`Using normalized path: ${projectPath}`);
+    
+    // Check if directory exists
+    try {
+      const stats = await fs.stat(projectPath);
+      if (!stats.isDirectory()) {
+        throw new Error(`Path is not a directory: ${projectPath}`);
+      }
+    } catch (error) {
+      throw new Error(`Cannot access directory: ${projectPath}. Error: ${error.message}`);
+    }
+    
+    // Get all files in the project using manual directory scanning for better cross-platform support
+    console.log('Scanning directory for files...');
+    const files = await scanDirectory(projectPath);
+    console.log(`Found ${files.length} files`);
+    
+    // Analyze project structure
+    console.log('Analyzing project structure...');
+    const structure = await analyzeStructure(projectPath, files);
+    
+    // Detect tech stack
+    console.log('Detecting tech stack...');
+    const techStack = await detectTechStack(projectPath, files);
+    console.log(`Detected: ${JSON.stringify(techStack, null, 2)}`);
+    
+    // Analyze code quality
+    console.log('Analyzing code quality...');
+    const codeQuality = await analyzeCodeQuality(projectPath, files, techStack);
+    
+    return {
+      structure,
+      techStack,
+      codeQuality
+    };
+  } catch (error) {
+    console.error(`Error analyzing project: ${error.message}`);
+    console.error(error.stack);
+    
+    // Return empty results rather than failing completely
+    return {
+      structure: 'Error analyzing project structure.',
+      techStack: {
+        languages: [],
+        frameworks: [],
+        tools: []
+      },
+      codeQuality: [
+        {
+          type: 'error',
+          severity: 'high',
+          message: `Error analyzing project: ${error.message}`
+        }
+      ]
+    };
+  }
+}
+
+/**
+ * Scans a directory recursively to find all files
+ * @param {string} dirPath - Path to the directory
+ * @param {number} maxDepth - Maximum depth to scan
+ * @param {number} currentDepth - Current scan depth
+ * @returns {Promise<Array<string>>} List of files (relative paths)
+ */
+async function scanDirectory(dirPath, maxDepth = 3, currentDepth = 0, basePath = null) {
+  if (currentDepth > maxDepth) {
+    return [];
+  }
   
-  // Analyze project structure
-  const structure = await analyzeStructure(projectPath, files);
+  if (!basePath) {
+    basePath = dirPath;
+  }
   
-  // Detect tech stack
-  const techStack = await detectTechStack(projectPath, files);
-  
-  // Analyze code quality
-  const codeQuality = await analyzeCodeQuality(projectPath, files, techStack);
-  
-  return {
-    structure,
-    techStack,
-    codeQuality
-  };
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    let files = [];
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      
+      // Skip node_modules, dist, build, and .git directories
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || 
+            entry.name === 'dist' || 
+            entry.name === 'build' || 
+            entry.name === '.git') {
+          continue;
+        }
+        
+        const subFiles = await scanDirectory(fullPath, maxDepth, currentDepth + 1, basePath);
+        files = files.concat(subFiles);
+      } else {
+        // Get path relative to the base directory
+        const relativePath = path.relative(basePath, fullPath);
+        // Normalize to forward slashes for consistency
+        files.push(relativePath.replace(/\\/g, '/'));
+      }
+    }
+    
+    return files;
+  } catch (error) {
+    console.error(`Error scanning directory ${dirPath}: ${error.message}`);
+    return [];
+  }
 }
 
 /**
@@ -109,20 +197,30 @@ async function detectTechStack(projectPath, files) {
   let packageJson = null;
   try {
     const packageJsonPath = path.join(projectPath, 'package.json');
+    console.log(`Looking for package.json at: ${packageJsonPath}`);
+    
     const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8');
     packageJson = JSON.parse(packageJsonContent);
+    console.log('Found and parsed package.json');
   } catch (error) {
+    console.log(`No package.json found or error parsing: ${error.message}`);
     // Package.json not found or invalid, continue without it
   }
   
   // Detect languages
+  console.log('Detecting languages...');
   const languages = await detectLanguages(files);
+  console.log(`Detected languages: ${languages.map(l => l.name).join(', ')}`);
   
   // Detect frameworks
+  console.log('Detecting frameworks...');
   const frameworks = await detectFrameworks(files, packageJson);
+  console.log(`Detected frameworks: ${frameworks.map(f => f.name).join(', ')}`);
   
   // Detect tools
+  console.log('Detecting tools...');
   const tools = await detectTools(files, packageJson);
+  console.log(`Detected tools: ${tools.map(t => t.name).join(', ')}`);
   
   return {
     languages,
