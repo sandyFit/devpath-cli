@@ -7,13 +7,21 @@ export default function recommendCommand(program) {
     .command('recommend')
     .description('Suggest tutorials, docs, or articles based on your project')
     .argument('[path]', 'Path to the project directory', '.')
-    .option('-t, --type <type>', 'Type of recommendations (tutorials, docs, articles, all)', 'all')
+    .option('-t, --type <type>', 'Type of recommendations (tutorials, docs, documentation, articles, all)', 'all')
     .option('-l, --limit <number>', 'Maximum number of recommendations', '5')
     .option('--tech <technology>', 'Specific technology to get recommendations for')
     .action(async (path, options) => {
+      // Normalize type option
+      if (options.type === 'docs') {
+        options.type = 'documentation';
+      }
+      
       const spinner = ora('Finding learning resources...').start();
       
       try {
+        console.log(`Starting recommendation search for path: ${path}`);
+        console.log(`Options: ${JSON.stringify(options)}`);
+        
         const recommendations = await getRecommendations(path, options);
         spinner.succeed('Found learning resources!');
         
@@ -39,6 +47,7 @@ export default function recommendCommand(program) {
       } catch (error) {
         spinner.fail('Failed to get recommendations');
         console.error(chalk.red(`Error: ${error.message}`));
+        console.error(error.stack);
       }
     });
 }
