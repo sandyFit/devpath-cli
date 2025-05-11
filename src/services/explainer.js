@@ -13,16 +13,38 @@ export async function explainProject(projectPath, options) {
   let isFile = false;
   let targetPath = projectPath;
   
-  // Check if we're explaining a specific file
+  /// Check if we're explaining a specific file
   if (options.file) {
     targetPath = path.resolve(projectPath, options.file);
     try {
+      // First check if the file exists
+      await fs.access(targetPath, fs.constants.F_OK);
       fileContent = await fs.readFile(targetPath, 'utf-8');
       isFile = true;
     } catch (error) {
-      throw new Error(`Could not read file: ${targetPath}`);
+      // Add more helpful error message with file search suggestions
+      if (error.code === 'ENOENT') {
+        // Try to find similar files
+        const possibleFiles = await findSimilarFiles(projectPath, options.file);
+        let errorMsg = `Could not read file: ${targetPath}`;
+
+        if (possibleFiles.length > 0) {
+          errorMsg += `\n\nSimilar files found:`;
+          possibleFiles.forEach(file => {
+            errorMsg += `\n- ${file}`;
+          });
+          errorMsg += `\n\nTry using one of these paths with the -f flag.`;
+        } else {
+          errorMsg += `\nFile not found. Make sure the path is correct and the file exists.`;
+        }
+
+        throw new Error(errorMsg);
+      } else {
+        throw new Error(`Could not read file: ${targetPath}\nError: ${error.message}`);
+      }
     }
   }
+
   
   // If we're explaining a component, find relevant files
   let componentFiles = [];
@@ -78,6 +100,44 @@ async function findComponentFiles(projectPath, componentName) {
 }
 
 /**
+ * Finds files with similar names in the project
+ * @param {string} projectPath - Path to the project directory
+ * @param {string} fileName - Name of the file to find
+ * @returns {Promise<Array<string>>} List of similar file paths
+ */
+async function findSimilarFiles(projectPath, fileName) {
+  const results = [];
+  const baseName = path.basename(fileName);
+
+  async function searchDir(dirPath) {
+    try {
+      const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+      for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+
+        if (entry.isDirectory()) {
+          // Skip node_modules and hidden directories
+          if (entry.name !== 'node_modules' && !entry.name.startsWith('.')) {
+            await searchDir(fullPath);
+          }
+        } else if (entry.name.toLowerCase().includes(baseName.toLowerCase())) {
+          // Return path relative to project path
+          const relativePath = path.relative(projectPath, fullPath);
+          results.push(relativePath);
+        }
+      }
+    } catch (error) {
+      console.error(`Error searching directory ${dirPath}: ${error.message}`);
+    }
+  }
+
+  await searchDir(projectPath);
+  return results;
+}
+
+
+/**
  * Explains a specific file
  * @param {string} filePath - Path to the file
  * @param {string} content - File content
@@ -87,7 +147,7 @@ async function findComponentFiles(projectPath, componentName) {
 async function explainFile(filePath, content, detailLevel) {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath).toLowerCase();
-  
+  console.log(`Searching for ${fileName} in ${filePath}...`);
   // Determine file type
   let fileType = 'unknown';
   if (fileExt === '.js') fileType = 'JavaScript';
@@ -190,11 +250,11 @@ async function explainComponent(projectPath, files, detailLevel) {
       fileContents[file] = null;
     }
   }
-  
+
   // Generate overview
   const componentName = path.basename(files[0]).split('.')[0];
   let overview = `This component is named "${componentName}" and consists of ${files.length} files. `;
-  
+
   // Determine component type
   let componentType = 'unknown';
   if (files.some(file => file.includes('component'))) {
@@ -204,27 +264,27 @@ async function explainComponent(projectPath, files, detailLevel) {
   } else if (files.some(file => file.includes('util'))) {
     componentType = 'utility';
   }
-  
+
   overview += `It appears to be a ${componentType}. `;
-  
+
   // Add more details based on file contents
   const details = [];
   const codeExamples = [];
-  
+
   // Extract details from files
   for (const file of files) {
     const content = fileContents[file];
     if (!content) continue;
-    
+
     const fileName = path.basename(file);
     const fileExt = path.extname(file).toLowerCase();
-    
+
     if (fileExt === '.js') {
       details.push({
         title: `JavaScript File: ${fileName}`,
         description: `This file contains ${content.split('\n').length} lines of code.`
       });
-      
+
       // Extract a code example if detail level is high enough
       if (detailLevel === 'advanced' || detailLevel === 'intermediate') {
         const functionMatch = content.match(/function\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*{[^}]*}/);
@@ -238,14 +298,14 @@ async function explainComponent(projectPath, files, detailLevel) {
       }
     }
   }
-  
+
   // Suggest next steps
   const nextSteps = [
     `Learn more about ${componentType}s in JavaScript applications`,
     'Understand how this component interacts with other parts of the project',
     'Look for patterns and best practices in component design'
   ];
-  
+
   return {
     overview,
     details,
@@ -254,6 +314,13 @@ async function explainComponent(projectPath, files, detailLevel) {
   };
 }
 
+
+/**
+ * Explains the whole project
+ * @param {Object} analysis - Project analysis data
+ * @param {string} detailLevel - Level of detail for the explanation
+ * @returns {Promise<Object>} Project explanation
+ */
 /**
  * Explains the whole project
  * @param {Object} analysis - Project analysis data
@@ -263,7 +330,7 @@ async function explainComponent(projectPath, files, detailLevel) {
 async function explainWholeProject(analysis, detailLevel) {
   // Generate overview
   let overview = 'This project is a JavaScript application ';
-  
+
   // Add details about the tech stack
   if (analysis.techStack.frameworks && analysis.techStack.frameworks.length > 0) {
     const frameworks = analysis.techStack.frameworks.map(f => f.name).join(', ');
@@ -271,12 +338,12 @@ async function explainWholeProject(analysis, detailLevel) {
   } else {
     overview += 'using vanilla JavaScript. ';
   }
-  
+
   if (analysis.techStack.tools && analysis.techStack.tools.length > 0) {
     const tools = analysis.techStack.tools.map(t => t.name).join(', ');
     overview += `It uses tools like ${tools}. `;
   }
-  
+
   // Generate details based on analysis
   const details = [
     {
@@ -285,15 +352,15 @@ async function explainWholeProject(analysis, detailLevel) {
     },
     {
       title: 'Code Quality',
-      description: analysis.codeQuality.length > 0 
-        ? `There are ${analysis.codeQuality.length} code quality insights available.` 
+      description: analysis.codeQuality.length > 0
+        ? `There are ${analysis.codeQuality.length} code quality insights available.`
         : 'No code quality issues were detected.'
     }
   ];
-  
+
   // No code examples for whole project explanation
   const codeExamples = [];
-  
+
   // Suggest next steps
   const nextSteps = [
     'Review the project structure to understand the organization',
@@ -301,7 +368,7 @@ async function explainWholeProject(analysis, detailLevel) {
     'Understand how different components interact with each other',
     'Check the package.json file to see dependencies and scripts'
   ];
-  
+
   return {
     overview,
     details,
@@ -309,6 +376,8 @@ async function explainWholeProject(analysis, detailLevel) {
     nextSteps
   };
 }
+
+
 
 /**
  * Determines the purpose of a file based on its path and type

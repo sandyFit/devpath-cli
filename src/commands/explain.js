@@ -51,7 +51,7 @@ export default function explainCommand(program) {
           explanation.nextSteps.forEach((step, index) => {
             console.log(`  ${index + 1}. ${step}`);
           });
-        }
+        }       
         
       } catch (error) {
         spinner.fail('Failed to generate explanation');
