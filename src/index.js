@@ -8,6 +8,9 @@ import chalk from 'chalk';
 import analyzeCommand from './commands/analyze.js';
 import recommendCommand from './commands/recommend.js';
 import explainCommand from './commands/explain.js';
+import awsServicesCommand from './commands/aws-services.js';
+import learnCommand from './commands/learn.js';
+import helpCommand from './commands/help.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,20 +27,21 @@ program
 analyzeCommand(program);
 recommendCommand(program);
 explainCommand(program);
-
-// Add a default help command
-program
-  .command('help')
-  .description('Display help information')
-  .action(() => {
-    program.help();
-  });
+awsServicesCommand(program);
+learnCommand(program);
+helpCommand(program);
 
 // Handle unknown commands
 program.on('command:*', () => {
   console.error(chalk.red(`\nInvalid command: ${program.args.join(' ')}`));
-  console.log(`See ${chalk.blue('--help')} for a list of available commands.\n`);
+  console.log(`See ${chalk.blue('devpath --help')} for a list of available commands.\n`);
   process.exit(1);
+});
+
+// Handle option errors
+program.on('option:*', () => {
+  console.error(chalk.red('\nError: Invalid option usage'));
+  console.log(`Run ${chalk.blue('devpath help --tips')} for help with command options.\n`);
 });
 
 // Parse command line arguments

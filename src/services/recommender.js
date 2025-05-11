@@ -1,7 +1,10 @@
-import axios from 'axios';
 import { analyzeProject } from './analyzer.js';
+<<<<<<< Updated upstream
 import path from 'path';
 import fs from 'fs/promises';
+=======
+import { getResourcesForTechnology } from '../data/resources-db.js';
+>>>>>>> Stashed changes
 
 /**
  * Gets learning recommendations based on project analysis
@@ -19,6 +22,7 @@ export async function getRecommendations(projectPath, options) {
   let technologies = [];
   
   if (options.tech) {
+<<<<<<< Updated upstream
     console.log(`Looking for specific technology: ${options.tech}`);
     
     // Look for the specific technology in the tech stack
@@ -39,6 +43,20 @@ export async function getRecommendations(projectPath, options) {
       console.log(`No exact match found for ${options.tech}, using default entry`);
       technologies.push({ name: options.tech });
     }
+=======
+    // If tech is specified directly, use it regardless of project analysis
+    technologies.push({ name: options.tech });
+    
+    // Also look for the specific technology in the tech stack for additional info
+    Object.values(analysis.techStack).forEach(category => {
+      const found = category.find(item => 
+        item.name.toLowerCase() === options.tech.toLowerCase()
+      );
+      if (found && !technologies.some(t => t.name.toLowerCase() === found.name.toLowerCase())) {
+        technologies.push(found);
+      }
+    });
+>>>>>>> Stashed changes
   } else {
     // Get all technologies from the tech stack
     Object.values(analysis.techStack).forEach(category => {
@@ -88,12 +106,23 @@ export async function getRecommendations(projectPath, options) {
   
   // Get recommendations for each technology and type
   for (const tech of technologies) {
+<<<<<<< Updated upstream
     console.log(`Fetching recommendations for ${tech.name}`);
     for (const type of types) {
       const resources = await fetchRecommendations(tech.name, type);
       recommendations[type] = recommendations[type].concat(resources);
       console.log(`Found ${resources.length} ${type} for ${tech.name}`);
     }
+=======
+    const resources = getResourcesForTechnology(tech.name, 'all');
+    
+    // Add resources to recommendations by type
+    types.forEach(type => {
+      if (resources[type]) {
+        recommendations[type] = recommendations[type].concat(resources[type]);
+      }
+    });
+>>>>>>> Stashed changes
   }
   
   // Limit the number of recommendations per category
@@ -103,6 +132,7 @@ export async function getRecommendations(projectPath, options) {
   });
   
   return recommendations;
+<<<<<<< Updated upstream
 }
 
 /**
@@ -560,3 +590,6 @@ async function fetchRecommendations(technology, type) {
   console.log(`No resources found for ${techKey} (${type})`);
   return [];
 }
+=======
+}
+>>>>>>> Stashed changes

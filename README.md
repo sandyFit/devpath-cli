@@ -6,6 +6,8 @@ A developer learning assistant that analyzes projects, recommends resources, and
 
 - **Project Analysis**: Scans local folders and GitHub repositories to detect tech stack
 - **Learning Resources**: Suggests tutorials, documentation, and articles based on your tech stack
+- **AWS Service Recommendations**: Recommends AWS services based on your project's characteristics
+- **Interactive Learning**: Guides you through AWS concepts with personalized tutorials and quizzes
 - **Code Quality Insights**: Analyzes project structure and code organization
 
 ## Installation
@@ -51,6 +53,32 @@ Options:
 - `--limit <number>` - Maximum number of recommendations (default: 5)
 - `--tech <technology>` - Specific technology to get recommendations for
 
+### Get AWS Service Recommendations
+
+Recommend AWS services based on your project's characteristics:
+
+```bash
+devpath aws [path]
+```
+
+Options:
+- `--category <category>` - Category of AWS services (compute, storage, database, networking, devtools, security, integration, analytics, aiml, management)
+- `--limit <number>` - Maximum number of recommendations per category (default: 3)
+- `--deploy` - Focus on deployment-related services
+
+### Start Interactive Learning
+
+Learn about AWS concepts related to your project through interactive tutorials and quizzes:
+
+```bash
+devpath learn [path]
+```
+
+Options:
+- `--interactive` - Start interactive learning mode with quizzes
+- `--resources` - Show learning resources without interactive mode
+- `--category <category>` - Focus on a specific AWS service category
+
 ### Explain Project Components
 
 Break down parts of the project and explain them simply:
@@ -60,7 +88,7 @@ devpath explain [path]
 ```
 
 Options:
-- `--component <name>` - Specific component or module to explain
+- `--component <n>` - Specific component or module to explain
 - `--file <filepath>` - Specific file to explain
 - `--detail <level>` - Level of detail (basic, intermediate, advanced)
 
