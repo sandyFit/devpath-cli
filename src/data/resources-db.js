@@ -95,6 +95,18 @@ export const resourcesDatabase = {
         description: "In this React tutorial series, I'll take you from novice to ninja in React, starting with the very basics and working up to advanced topics",
         url: "https://www.youtube.com/playlist?list=PL4cUxeGkcC9gZD-Tvwfod2gaISzfRiP9d",
         difficulty: "Beginner"
+      },
+      {
+        title: "React Tutorial: Tic-Tac-Toe Game",
+        description: "Official React tutorial that teaches fundamentals by building a simple game",
+        url: "https://reactjs.org/tutorial/tutorial.html",
+        difficulty: "Beginner"
+      },
+      {
+        title: "Build a React App with Hooks",
+        description: "Learn how to use React Hooks to build modern React applications",
+        url: "https://www.youtube.com/watch?v=mxK8b99iJTg",
+        difficulty: "Intermediate"
       }
     ],
     documentation: [
@@ -103,6 +115,24 @@ export const resourcesDatabase = {
         description: "Official React documentation",
         url: "https://reactjs.org/docs/getting-started.html",
         difficulty: "All levels"
+      },
+      {
+        title: "React Hooks Documentation",
+        description: "Complete guide to React Hooks",
+        url: "https://reactjs.org/docs/hooks-intro.html",
+        difficulty: "Intermediate"
+      },
+      {
+        title: "Thinking in React",
+        description: "Step-by-step guide to building React UIs",
+        url: "https://reactjs.org/docs/thinking-in-react.html",
+        difficulty: "Beginner"
+      },
+      {
+        title: "React Router Documentation",
+        description: "Official documentation for React Router",
+        url: "https://reactrouter.com/docs/en/v6",
+        difficulty: "Intermediate"
       }
     ],
     articles: [
@@ -111,6 +141,24 @@ export const resourcesDatabase = {
         description: "A roadmap to becoming a React developer",
         url: "https://www.freecodecamp.org/news/how-to-learn-react-in-2023/",
         difficulty: "Beginner"
+      },
+      {
+        title: "React Performance Optimization",
+        description: "Techniques to optimize React application performance",
+        url: "https://reactjs.org/docs/optimizing-performance.html",
+        difficulty: "Advanced"
+      },
+      {
+        title: "React TypeScript Cheatsheet",
+        description: "Cheatsheet for using TypeScript with React",
+        url: "https://github.com/typescript-cheatsheets/react",
+        difficulty: "Intermediate"
+      },
+      {
+        title: "A Complete Guide to useEffect",
+        description: "Deep dive into React's useEffect hook",
+        url: "https://overreacted.io/a-complete-guide-to-useeffect/",
+        difficulty: "Intermediate"
       }
     ]
   },
