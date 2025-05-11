@@ -130,6 +130,14 @@ export async function detectFrameworks(files, packageJson) {
     }
   });
   
+  // Check for React by looking for JSX files
+  if (!frameworks.some(f => f.name === 'React')) {
+    const hasJsxFiles = files.some(file => file.endsWith('.jsx') || file.endsWith('.tsx'));
+    if (hasJsxFiles) {
+      frameworks.push({ name: 'React' });
+    }
+  }
+  
   return frameworks;
 }
 

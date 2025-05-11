@@ -1,6 +1,7 @@
 import { glob } from 'glob';
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import simpleGit from 'simple-git';
 import { detectLanguages, detectFrameworks, detectTools } from '../utils/tech-detector.js';
 import { analyzeCodeQuality } from '../utils/code-quality.js';
@@ -20,10 +21,9 @@ export async function analyzeProject(projectPath, options) {
   }
   
   try {
-    // Normalize path for cross-platform compatibility
-    projectPath = path.normalize(projectPath);
-    
-    console.log(`Using normalized path: ${projectPath}`);
+    // Convert Windows paths to WSL paths if running in WSL
+    projectPath = convertPath(projectPath);
+    console.log(`Using converted path: ${projectPath}`);
     
     // Check if directory exists
     try {
@@ -32,12 +32,23 @@ export async function analyzeProject(projectPath, options) {
         throw new Error(`Path is not a directory: ${projectPath}`);
       }
     } catch (error) {
-      throw new Error(`Cannot access directory: ${projectPath}. Error: ${error.message}`);
+      // Provide helpful error message with path format guidance
+      if (error.code === 'ENOENT') {
+        const isWsl = checkIfWsl();
+        const errorMsg = `Cannot access directory: ${projectPath}. The directory does not exist.`;
+        const helpMsg = isWsl 
+          ? `\n\nIf you're trying to access a Windows path from WSL, use the format: /mnt/c/path/to/project instead of C:\\path\\to\\project`
+          : `\n\nMake sure the path exists and you have permission to access it.`;
+        
+        throw new Error(errorMsg + helpMsg);
+      } else {
+        throw new Error(`Cannot access directory: ${projectPath}. Error: ${error.message}`);
+      }
     }
     
     // Get all files in the project using manual directory scanning for better cross-platform support
     console.log('Scanning directory for files...');
-    const files = await scanDirectory(projectPath);
+    const files = await scanDirectory(projectPath, options.depth || 3);
     console.log(`Found ${files.length} files`);
     
     // Analyze project structure
@@ -79,6 +90,51 @@ export async function analyzeProject(projectPath, options) {
       ]
     };
   }
+}
+
+/**
+ * Checks if running in Windows Subsystem for Linux
+ * @returns {boolean} True if running in WSL
+ */
+function checkIfWsl() {
+  try {
+    const release = os.release().toLowerCase();
+    return release.includes('microsoft') || release.includes('wsl');
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Converts Windows paths to WSL paths if needed
+ * @param {string} inputPath - Path to convert
+ * @returns {string} Converted path
+ */
+function convertPath(inputPath) {
+  // Normalize path for cross-platform compatibility
+  const normalizedPath = path.normalize(inputPath);
+  
+  // Check if we're in WSL
+  const isWsl = checkIfWsl();
+  
+  // If we're in WSL and this is a Windows path, convert it
+  if (isWsl && /^[A-Za-z]:\\/.test(normalizedPath)) {
+    // Convert Windows path (C:\path\to\dir) to WSL path (/mnt/c/path/to/dir)
+    const driveLetter = normalizedPath.charAt(0).toLowerCase();
+    const pathWithoutDrive = normalizedPath.substring(2).replace(/\\/g, '/');
+    return `/mnt/${driveLetter}${pathWithoutDrive}`;
+  }
+  
+  // If we're in Windows and this is a WSL path, convert it
+  if (!isWsl && /^\/mnt\/[a-z]\//.test(normalizedPath)) {
+    // Convert WSL path (/mnt/c/path/to/dir) to Windows path (C:\path\to\dir)
+    const driveLetter = normalizedPath.charAt(5).toUpperCase();
+    const pathWithoutDrive = normalizedPath.substring(7).replace(/\//g, '\\');
+    return `${driveLetter}:${pathWithoutDrive}`;
+  }
+  
+  // Return the normalized path if no conversion is needed
+  return normalizedPath;
 }
 
 /**
@@ -210,17 +266,17 @@ async function detectTechStack(projectPath, files) {
   // Detect languages
   console.log('Detecting languages...');
   const languages = await detectLanguages(files);
-  console.log(`Detected languages: ${languages.map(l => l.name).join(', ')}`);
+  console.log(`Detected languages: ${languages.map(l => l.name).join(', ') || 'none'}`);
   
   // Detect frameworks
   console.log('Detecting frameworks...');
   const frameworks = await detectFrameworks(files, packageJson);
-  console.log(`Detected frameworks: ${frameworks.map(f => f.name).join(', ')}`);
+  console.log(`Detected frameworks: ${frameworks.map(f => f.name).join(', ') || 'none'}`);
   
   // Detect tools
   console.log('Detecting tools...');
   const tools = await detectTools(files, packageJson);
-  console.log(`Detected tools: ${tools.map(t => t.name).join(', ')}`);
+  console.log(`Detected tools: ${tools.map(t => t.name).join(', ') || 'none'}`);
   
   return {
     languages,

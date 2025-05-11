@@ -148,33 +148,59 @@ async function explainFile(filePath, content, detailLevel) {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath).toLowerCase();
   console.log(`Searching for ${fileName} in ${filePath}...`);
+  
   // Determine file type
   let fileType = 'unknown';
   if (fileExt === '.js') fileType = 'JavaScript';
+  else if (fileExt === '.jsx') fileType = 'React JSX';
+  else if (fileExt === '.ts') fileType = 'TypeScript';
+  else if (fileExt === '.tsx') fileType = 'React TypeScript';
   else if (fileExt === '.json') fileType = 'JSON configuration';
   else if (fileExt === '.html') fileType = 'HTML';
   else if (fileExt === '.css') fileType = 'CSS';
+  else if (fileExt === '.scss' || fileExt === '.sass') fileType = 'SASS';
   else if (fileExt === '.md') fileType = 'Markdown';
   
   // Generate overview based on file type
   let overview = `This is a ${fileType} file named "${fileName}". `;
   
   // Add more details based on file content and type
-  if (fileType === 'JavaScript') {
+  if (fileType === 'JavaScript' || fileType === 'React JSX' || fileType === 'TypeScript' || fileType === 'React TypeScript') {
     if (content.includes('import') || content.includes('export')) {
       overview += 'It uses ES modules (import/export). ';
     }
     
-    if (content.includes('class ')) {
+    if (content.includes('class ') && content.includes('extends')) {
+      overview += 'It contains one or more component classes. ';
+    } else if (content.includes('class ')) {
       overview += 'It contains one or more JavaScript classes. ';
     }
     
     if (content.includes('function ')) {
-      overview += 'It defines one or more functions. ';
+      if (fileType.includes('React') && content.match(/function\s+[A-Z][a-zA-Z0-9_]*\s*\(/)) {
+        overview += 'It defines one or more React functional components. ';
+      } else {
+        overview += 'It defines one or more functions. ';
+      }
     }
     
     if (content.includes('const ') || content.includes('let ')) {
       overview += 'It declares variables using modern JavaScript syntax. ';
+    }
+    
+    // React specific detection
+    if (fileType.includes('React') || content.includes('import React') || content.includes('from "react"') || content.includes("from 'react'")) {
+      overview += 'This file is part of a React application. ';
+      
+      // Check for hooks
+      if (content.includes('useState') || content.includes('useEffect') || content.includes('useContext')) {
+        overview += 'It uses React hooks for state management and side effects. ';
+      }
+      
+      // Check for JSX
+      if (content.includes('return (') && (content.includes('<') && content.includes('>'))) {
+        overview += 'It returns JSX elements to render UI components. ';
+      }
     }
   } else if (fileType === 'JSON configuration') {
     try {
@@ -196,25 +222,56 @@ async function explainFile(filePath, content, detailLevel) {
   // Extract code examples based on detail level
   const codeExamples = [];
   if (detailLevel === 'advanced' || detailLevel === 'intermediate') {
-    // For JavaScript files, try to extract functions or classes
-    if (fileType === 'JavaScript') {
-      const functionMatches = content.match(/function\\s+([a-zA-Z0-9_]+)\\s*\\([^)]*\\)\\s*{[^}]*}/g);
-      if (functionMatches && functionMatches.length > 0) {
+    // For JavaScript/React files, try to extract functions or components
+    if (fileType === 'JavaScript' || fileType === 'React JSX' || fileType === 'TypeScript' || fileType === 'React TypeScript') {
+      // Try to extract React components first
+      const componentMatches = content.match(/function\s+([A-Z][a-zA-Z0-9_]*)\s*\([^)]*\)\s*{[\s\S]*?return\s*\([\s\S]*?\);?\s*}/);
+      if (componentMatches && componentMatches.length > 0) {
         codeExamples.push({
-          title: 'Example Function',
-          code: functionMatches[0],
-          explanation: 'This function is defined in the file. It takes parameters and performs operations.'
+          title: 'React Component',
+          code: componentMatches[0],
+          explanation: 'This is a React functional component that returns JSX to render UI elements.'
+        });
+      } else {
+        // Fall back to regular function extraction
+        const functionMatches = content.match(/function\s+([a-zA-Z0-9_]+)\s*\([^)]*\)\s*{[^}]*}/g);
+        if (functionMatches && functionMatches.length > 0) {
+          codeExamples.push({
+            title: 'Example Function',
+            code: functionMatches[0],
+            explanation: 'This function is defined in the file. It takes parameters and performs operations.'
+          });
+        }
+      }
+      
+      // Extract hooks usage if present
+      const hooksMatches = content.match(/const\s+\[[^\]]+\]\s*=\s*useState\([^)]*\)/);
+      if (hooksMatches && hooksMatches.length > 0) {
+        codeExamples.push({
+          title: 'React Hook Usage',
+          code: hooksMatches[0],
+          explanation: 'This code uses React\'s useState hook to manage component state.'
         });
       }
     }
   }
   
-  // Suggest next steps
-  const nextSteps = [
-    `Read the documentation for ${fileType}`,
-    'Try to understand how this file connects with other parts of the project',
-    'Look for patterns and best practices in the code'
-  ];
+  // Suggest next steps based on file type
+  let nextSteps = [];
+  
+  if (fileType.includes('React')) {
+    nextSteps = [
+      'Read the React documentation to understand component lifecycle and hooks',
+      'Examine how this component connects with other components in the application',
+      'Look for state management patterns and props usage'
+    ];
+  } else {
+    nextSteps = [
+      `Read the documentation for ${fileType}`,
+      'Try to understand how this file connects with other parts of the project',
+      'Look for patterns and best practices in the code'
+    ];
+  }
   
   return {
     overview,
@@ -391,11 +448,23 @@ function getFilePurpose(filePath, fileType) {
   if (fileName === 'package.json') return 'dependency management and project configuration';
   if (fileName === 'README.md') return 'documentation';
   if (fileName.includes('config')) return 'configuration';
-  if (filePath.includes('src/components')) return 'UI components';
+  
+  // React specific paths
+  if (fileType.includes('React') || filePath.includes('components')) {
+    if (fileName.startsWith('App') || fileName === 'App.jsx' || fileName === 'App.tsx') {
+      return 'main application component';
+    }
+    if (filePath.includes('components')) return 'UI components';
+    if (filePath.includes('pages')) return 'page components';
+    if (filePath.includes('hooks')) return 'custom React hooks';
+    if (filePath.includes('context')) return 'React context providers';
+  }
+  
   if (filePath.includes('src/services')) return 'backend services';
   if (filePath.includes('src/utils')) return 'utility functions';
   if (filePath.includes('src/models')) return 'data models';
   if (filePath.includes('test')) return 'testing';
+  if (filePath.includes('styles') || fileType === 'CSS' || fileType === 'SASS') return 'styling';
   
   return 'application logic';
 }
