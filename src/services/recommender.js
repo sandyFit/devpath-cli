@@ -1,10 +1,8 @@
 import { analyzeProject } from './analyzer.js';
-<<<<<<< Updated upstream
 import path from 'path';
 import fs from 'fs/promises';
-=======
 import { getResourcesForTechnology } from '../data/resources-db.js';
->>>>>>> Stashed changes
+
 
 /**
  * Gets learning recommendations based on project analysis
@@ -13,127 +11,65 @@ import { getResourcesForTechnology } from '../data/resources-db.js';
  * @returns {Promise<Object>} Learning recommendations
  */
 export async function getRecommendations(projectPath, options) {
-  console.log(`Analyzing project at: ${projectPath}`);
-  
   // First analyze the project to understand the tech stack
   const analysis = await analyzeProject(projectPath, { depth: 3 });
-  
+
   // Filter by specific technology if requested
   let technologies = [];
-  
+
   if (options.tech) {
-<<<<<<< Updated upstream
-    console.log(`Looking for specific technology: ${options.tech}`);
-    
-    // Look for the specific technology in the tech stack
-    // Make this more flexible by doing partial matching
-    const techLower = options.tech.toLowerCase();
-    
-    Object.values(analysis.techStack).forEach(category => {
-      category.forEach(item => {
-        if (item.name.toLowerCase().includes(techLower)) {
-          technologies.push(item);
-          console.log(`Found matching technology: ${item.name}`);
-        }
-      });
-    });
-    
-    // If no exact match, try to find a default entry
-    if (technologies.length === 0) {
-      console.log(`No exact match found for ${options.tech}, using default entry`);
-      technologies.push({ name: options.tech });
-    }
-=======
     // If tech is specified directly, use it regardless of project analysis
     technologies.push({ name: options.tech });
-    
+
     // Also look for the specific technology in the tech stack for additional info
     Object.values(analysis.techStack).forEach(category => {
-      const found = category.find(item => 
+      const found = category.find(item =>
         item.name.toLowerCase() === options.tech.toLowerCase()
       );
       if (found && !technologies.some(t => t.name.toLowerCase() === found.name.toLowerCase())) {
         technologies.push(found);
       }
     });
->>>>>>> Stashed changes
   } else {
     // Get all technologies from the tech stack
     Object.values(analysis.techStack).forEach(category => {
       technologies = technologies.concat(category);
     });
-    
-    // If no technologies detected, add some defaults based on file extensions
-    if (technologies.length === 0) {
-      console.log("No technologies detected, checking file extensions");
-      const fileExtensions = await detectFileExtensions(projectPath);
-      
-      if (fileExtensions.includes('.js') || fileExtensions.includes('.jsx')) {
-        technologies.push({ name: 'JavaScript' });
-      }
-      if (fileExtensions.includes('.html')) {
-        technologies.push({ name: 'HTML' });
-      }
-      if (fileExtensions.includes('.css')) {
-        technologies.push({ name: 'CSS' });
-      }
-      if (fileExtensions.includes('.py')) {
-        technologies.push({ name: 'Python' });
-      }
-      if (fileExtensions.includes('.java')) {
-        technologies.push({ name: 'Java' });
-      }
-      
-      console.log(`Added default technologies based on extensions: ${technologies.map(t => t.name).join(', ')}`);
-    }
   }
-  
-  console.log(`Found ${technologies.length} technologies to get recommendations for`);
-  
+
   // Get recommendations for each technology
   const recommendations = {
     tutorials: [],
     documentation: [],
     articles: []
   };
-  
+
   // Filter by recommendation type
-  const types = options.type === 'all' 
-    ? ['tutorials', 'documentation', 'articles'] 
+  const types = options.type === 'all'
+    ? ['tutorials', 'documentation', 'articles']
     : [options.type];
-  
-  console.log(`Getting recommendations for types: ${types.join(', ')}`);
-  
+
   // Get recommendations for each technology and type
   for (const tech of technologies) {
-<<<<<<< Updated upstream
-    console.log(`Fetching recommendations for ${tech.name}`);
-    for (const type of types) {
-      const resources = await fetchRecommendations(tech.name, type);
-      recommendations[type] = recommendations[type].concat(resources);
-      console.log(`Found ${resources.length} ${type} for ${tech.name}`);
-    }
-=======
     const resources = getResourcesForTechnology(tech.name, 'all');
-    
+
     // Add resources to recommendations by type
     types.forEach(type => {
       if (resources[type]) {
         recommendations[type] = recommendations[type].concat(resources[type]);
       }
     });
->>>>>>> Stashed changes
   }
-  
+
   // Limit the number of recommendations per category
   const limit = parseInt(options.limit) || 5;
   Object.keys(recommendations).forEach(type => {
     recommendations[type] = recommendations[type].slice(0, limit);
   });
-  
+
   return recommendations;
-<<<<<<< Updated upstream
 }
+  
 
 /**
  * Detects file extensions in the project
@@ -143,13 +79,13 @@ export async function getRecommendations(projectPath, options) {
 async function detectFileExtensions(projectPath) {
   try {
     const extensions = new Set();
-    
+
     async function scanDir(dirPath) {
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
-        
+
         if (entry.isDirectory()) {
           // Skip node_modules and hidden directories
           if (entry.name !== 'node_modules' && !entry.name.startsWith('.')) {
@@ -163,7 +99,7 @@ async function detectFileExtensions(projectPath) {
         }
       }
     }
-    
+
     await scanDir(projectPath);
     return Array.from(extensions);
   } catch (error) {
@@ -181,7 +117,7 @@ async function detectFileExtensions(projectPath) {
 async function fetchRecommendations(technology, type) {
   // In a real implementation, this would call an API or database
   // For now, we'll return mock data
-  
+
   // Mock data for demonstration purposes
   const mockResources = {
     // Node.js resources
@@ -217,7 +153,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // JavaScript resources
     javascript: {
       tutorials: [
@@ -269,7 +205,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // HTML resources
     html: {
       tutorials: [
@@ -315,7 +251,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // CSS resources
     css: {
       tutorials: [
@@ -367,7 +303,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // React resources
     react: {
       tutorials: [
@@ -413,7 +349,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // Express resources
     express: {
       tutorials: [
@@ -453,7 +389,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // Python resources
     python: {
       tutorials: [
@@ -499,7 +435,7 @@ async function fetchRecommendations(technology, type) {
         }
       ]
     },
-    
+
     // AWS CDK resources
     "aws-cdk": {
       tutorials: [
@@ -546,7 +482,7 @@ async function fetchRecommendations(technology, type) {
       ]
     }
   };
-  
+
   // Add aliases for common technologies to improve matching
   const techAliases = {
     'js': 'javascript',
@@ -561,22 +497,22 @@ async function fetchRecommendations(technology, type) {
     'css3': 'css',
     'aws cdk': 'aws-cdk'
   };
-  
+
   // Normalize technology name for lookup
   let techKey = technology.toLowerCase().replace(/[^a-z0-9.-]/g, '');
-  
+
   // Check for aliases
   if (techAliases[techKey]) {
     techKey = techAliases[techKey];
   }
-  
+
   console.log(`Looking up resources for technology key: ${techKey}`);
-  
+
   // Return mock resources if available, otherwise empty array
   if (mockResources[techKey] && mockResources[techKey][type]) {
     return mockResources[techKey][type];
   }
-  
+
   // If no exact match, try partial matching
   for (const [key, resources] of Object.entries(mockResources)) {
     if (key.includes(techKey) || techKey.includes(key)) {
@@ -586,10 +522,7 @@ async function fetchRecommendations(technology, type) {
       }
     }
   }
-  
+
   console.log(`No resources found for ${techKey} (${type})`);
   return [];
 }
-=======
-}
->>>>>>> Stashed changes

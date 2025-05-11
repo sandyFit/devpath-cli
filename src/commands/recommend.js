@@ -13,41 +13,40 @@ export default function recommendCommand(program) {
     .option('--tech <technology>', 'Specific technology to get recommendations for')
     .option('--list-techs', 'List all available technologies in the database')
     .action(async (path, options) => {
-<<<<<<< Updated upstream
       // Normalize type option
       if (options.type === 'docs') {
         options.type = 'documentation';
-=======
+      }
+
       // If --list-techs flag is provided, show available technologies
       if (options.listTechs) {
         console.log('\n' + chalk.bold.green('📚 Available Technologies'));
-        
+
         const technologies = getAvailableTechnologies();
         technologies.forEach(tech => {
           console.log(`  - ${tech}`);
         });
-        
+
         console.log('\n' + chalk.dim('Use --tech <technology> to get recommendations for a specific technology'));
         return;
->>>>>>> Stashed changes
       }
-      
+
       const spinner = ora('Finding learning resources...').start();
-      
+
       try {
         console.log(`Starting recommendation search for path: ${path}`);
         console.log(`Options: ${JSON.stringify(options)}`);
-        
+
         const recommendations = await getRecommendations(path, options);
         spinner.succeed('Found learning resources!');
-        
+
         console.log('\n' + chalk.bold.green('📚 Learning Recommendations'));
-        
+
         let hasResources = false;
-        
+
         Object.entries(recommendations).forEach(([category, resources]) => {
           console.log('\n' + chalk.bold(`${category}:`));
-          
+
           if (resources.length === 0) {
             console.log('  No resources found for this category');
           } else {
@@ -60,22 +59,19 @@ export default function recommendCommand(program) {
             });
           }
         });
-        
+
         if (!hasResources) {
           console.log('\n' + chalk.yellow('No resources found for the specified technology.'));
           console.log(chalk.dim('Try running "devpath recommend --list-techs" to see available technologies.'));
         } else {
           console.log('\n' + chalk.dim('Tip: Use --tech flag to get recommendations for a specific technology'));
         }
-        
+
       } catch (error) {
         spinner.fail('Failed to get recommendations');
         console.error(chalk.red(`Error: ${error.message}`));
-<<<<<<< Updated upstream
         console.error(error.stack);
-=======
         console.log(chalk.dim('Try running "devpath recommend --list-techs" to see available technologies.'));
->>>>>>> Stashed changes
       }
     });
 }
