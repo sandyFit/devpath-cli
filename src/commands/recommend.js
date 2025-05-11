@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import ora from 'ora';
-import { getRecommendations } from '../services/recommender.js';
+import { recommendResources } from '../services/recommender.js';
 import { getAvailableTechnologies } from '../data/resources-db.js';
 
 export default function recommendCommand(program) {
@@ -37,7 +37,7 @@ export default function recommendCommand(program) {
         console.log(`Starting recommendation search for path: ${path}`);
         console.log(`Options: ${JSON.stringify(options)}`);
 
-        const recommendations = await getRecommendations(path, options);
+        const recommendations = await recommendResources(path, options);
         spinner.succeed('Found learning resources!');
 
         console.log('\n' + chalk.bold.green('📚 Learning Recommendations'));
