@@ -261,9 +261,21 @@ async function explainFile(filePath, content, detailLevel) {
   
   if (fileType.includes('React')) {
     nextSteps = [
-      'Read the React documentation to understand component lifecycle and hooks',
+      'Read the React documentation to understand component lifecycle and hooks: https://reactjs.org/docs/hooks-intro.html',
       'Examine how this component connects with other components in the application',
-      'Look for state management patterns and props usage'
+      'Look for state management patterns and props usage: https://reactjs.org/docs/thinking-in-react.html'
+    ];
+  } else if (fileType === 'TypeScript') {
+    nextSteps = [
+      'Read the TypeScript documentation: https://www.typescriptlang.org/docs/',
+      'Try to understand how this file connects with other parts of the project',
+      'Look for type definitions and interfaces'
+    ];
+  } else if (fileType === 'CSS' || fileType === 'SASS') {
+    nextSteps = [
+      `Read the ${fileType} documentation: ${fileType === 'CSS' ? 'https://developer.mozilla.org/en-US/docs/Web/CSS' : 'https://sass-lang.com/documentation'}`,
+      'Understand how these styles are applied to components',
+      'Look for responsive design patterns'
     ];
   } else {
     nextSteps = [
