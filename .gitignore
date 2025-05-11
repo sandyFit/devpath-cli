@@ -48,3 +48,6 @@ coverage/
 # Package files
 package-lock.json
 yarn.locknode_modules/
+dist/
+build/
+.DS_Store
