@@ -5,19 +5,19 @@
 
 ![DevPath CLI Banner](./assets/devpath.jpg)
 
-## 🚀 Overview
+## Overview
 
 **DevPath CLI** is a command-line tool that analyzes your codebase, identifies technologies, and recommends tailored learning resources. Whether you're exploring a new project or sharpening your skills, DevPath helps you understand what you're working on — and what to learn next.
 
-## ✨ Features
+## Features
 
-* 🔍 **Project Analysis**: Detects tech stack, project structure, and code quality
-* 📂 **Code Explanation**: Explains files and components at basic, intermediate, or advanced levels
-* 📚 **Learning Resources**: Recommends tutorials and docs based on your stack
-* 🧠 **MongoDB Insights**: Recognizes database connections and explains schemas
-* ⚛️ **React Support**: Provides detailed analysis for React JSX components
+* **Project Analysis**: Detects tech stack, project structure, and code quality
+* **Code Explanation**: Explains files and components at basic, intermediate, or advanced levels
+* **Learning Resources**: Recommends tutorials and docs based on your stack
+* **MongoDB Insights**: Recognizes database connections and explains schemas
+* **React Support**: Provides detailed analysis for React JSX components
 
-## 📦 Installation
+## Installation
 
 Install globally:
 
@@ -31,9 +31,9 @@ Or install locally in your project:
 npm install devpath-cli
 ```
 
-## 💡 Usage
+## Usage
 
-### 🔎 Analyze a Project
+### Analyze a Project
 
 Scan and summarize the tech stack and structure:
 
@@ -48,7 +48,7 @@ devpath analyze "/path/to/project"
 
 ---
 
-### 🧾 Explain Code
+### Explain Code
 
 Break down and explain code simply:
 
@@ -64,7 +64,7 @@ devpath explain "/path/to/project" -f path/to/file.js -d intermediate
 
 ---
 
-### 📚 Recommend Resources
+### Recommend Resources
 
 Get tutorials, docs, and learning materials:
 
@@ -78,7 +78,7 @@ devpath recommend --list-techs
 
 ---
 
-### 🎓 Interactive Learning
+### Interactive Learning
 
 Start an AWS learning session:
 
@@ -94,7 +94,7 @@ devpath learn
 
 ---
 
-## 📊 Example Output
+## Example Output
 
 ```text
 📂 Project Structure:
@@ -123,7 +123,7 @@ devpath learn
 
 ---
 
-## 🧠 Supported Technologies
+## Supported Technologies
 
 ### Languages
 
@@ -146,7 +146,7 @@ devpath learn
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repo
 2. Create your feature branch:
@@ -163,7 +163,7 @@ devpath learn
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
 
