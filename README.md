@@ -1,88 +1,102 @@
-# DevPath CLI
 
-A developer learning assistant that analyzes projects, recommends resources, and helps you grow as a developer.
+# 🛠️ DevPath CLI
+
+*A smart learning assistant built to help developers grow — powered by Amazon Q CLI.*
 
 ![DevPath CLI Banner](./assets/devpath.jpg)
 
-## Overview
+## 🚀 Overview
 
-DevPath CLI is a powerful command-line tool designed to help developers understand codebases, learn new technologies, and improve their skills. It analyzes
-project structures, detects technologies, explains code components, and provides tailored learning resources.
+**DevPath CLI** is a command-line tool that analyzes your codebase, identifies technologies, and recommends tailored learning resources. Whether you're exploring a new project or sharpening your skills, DevPath helps you understand what you're working on — and what to learn next.
 
-## Features
+## ✨ Features
 
-• **Project Analysis**: Scans local folders to detect tech stack, project structure, and code quality
-• **Code Explanation**: Breaks down files and components with different detail levels (basic, intermediate, advanced)
-• **Learning Resources**: Suggests tutorials, documentation, and articles based on your project's tech stack
-• **MongoDB Detection**: Identifies and explains database connection files and schemas
-• **React Component Analysis**: Provides specialized insights for React JSX files and components
+* 🔍 **Project Analysis**: Detects tech stack, project structure, and code quality
+* 📂 **Code Explanation**: Explains files and components at basic, intermediate, or advanced levels
+* 📚 **Learning Resources**: Recommends tutorials and docs based on your stack
+* 🧠 **MongoDB Insights**: Recognizes database connections and explains schemas
+* ⚛️ **React Support**: Provides detailed analysis for React JSX components
 
-## Installation
+## 📦 Installation
 
-bash
-# Install globally
+Install globally:
+
+```bash
 npm install -g devpath-cli
+```
 
-# Or install locally
+Or install locally in your project:
+
+```bash
 npm install devpath-cli
+```
 
+## 💡 Usage
 
-## Usage
+### 🔎 Analyze a Project
 
-### Analyze a Project
+Scan and summarize the tech stack and structure:
 
-Scan and summarize the tech stack and structure of a project:
-
-bash
+```bash
 devpath analyze "/path/to/project"
+```
 
+**Options**
 
-Options:
-• --depth <number> - Specify scan depth (default: 3)
-• --dir "/path/to/project" - Alternative directory syntax
+* `--depth <number>` – Set scan depth (default: 3)
+* `--dir <path>` – Alternative directory path
 
-### Explain Code
+---
 
-Break down parts of the project and explain them simply:
+### 🧾 Explain Code
 
-bash
+Break down and explain code simply:
+
+```bash
 devpath explain "/path/to/project" -f path/to/file.js -d intermediate
+```
 
+**Options**
 
-Options:
-• -f, --file <path> - Specific file to explain
-• -c, --component <name> - Component to explain
-• -d, --detail <level> - Detail level (basic, intermediate, advanced)
+* `-f, --file <path>` – Specify a file to explain
+* `-c, --component <name>` – Focus on a specific component
+* `-d, --detail <level>` – Choose explanation depth (`basic`, `intermediate`, `advanced`)
 
-### Recommend Resources
+---
 
-Suggest tutorials, docs, or articles based on your project.
-- First list all available technologies in the database
+### 📚 Recommend Resources
 
-bash
+Get tutorials, docs, and learning materials:
+
+```bash
 devpath recommend --list-techs
+```
 
+**Options**
 
-Options:
-• --tech <technology> - Specific technology to get recommendations for
+* `--tech <technology>` – Recommend resources for a specific tech
 
-### Interactive Learning
+---
 
-Start an interactive learning session about AWS concepts:
+### 🎓 Interactive Learning
 
-bash
+Start an AWS learning session:
+
+```bash
 devpath learn
+```
 
+**Options**
 
-Options:
-• -i, --interactive - Start interactive learning mode with quizzes
-• -r, --resources - Show learning resources without interactive mode
-• -c, --category <category> - Focus on a specific AWS service category for your interactiv learningn
+* `-i, --interactive` – Launch quiz-based guided learning
+* `-r, --resources` – Show static resource recommendations
+* `-c, --category <category>` – Focus on an AWS service area
 
-## Example Output
+---
 
-📊 Project Analysis Summary
+## 📊 Example Output
 
+```text
 📂 Project Structure:
   • Total Files: 142
   • Total Directories: 18
@@ -95,63 +109,68 @@ Options:
     - HTML (2 files)
 
   Frameworks:
-    - React (detected from JSX files)
-    - Express (detected from server files)
+    - React
+    - Express
 
   Tools:
-    - MongoDB (detected from database files)
+    - MongoDB
 
 📈 Code Quality Insights:
-  - Project has a .gitignore file for version control
-  - Project has a README.md file for documentation
-  - Project has 2 test files
+  - .gitignore detected
+  - README.md present
+  - 2 test files found
+```
 
+---
 
-## Supported Technologies
-
-DevPath CLI can detect and provide resources for:
+## 🧠 Supported Technologies
 
 ### Languages
-• JavaScript/TypeScript
-• HTML/CSS
-• Python
-• Java
-• And many more
 
-### Frameworks
-• React
-• Vue.js
-• Angular
-• Express
-• Next.js
-• AWS CDK
+• JavaScript / TypeScript
+• Python
+• HTML / CSS
+• Java
+
+### Frameworks & Libraries
+
+• React • Vue.js • Angular
+• Express • Next.js • AWS CDK
 
 ### Tools & Databases
-• MongoDB/Mongoose
-• ESLint/Prettier
-• Webpack
-• Jest
-• Docker
-• AWS Services
 
-## Contributing
+• MongoDB / Mongoose
+• ESLint / Prettier
+• Webpack • Jest
+• Docker • AWS Services
 
-1. Fork the repository
-2. Create your feature branch (git checkout -b feature/amazing-feature)
-3. Commit your changes (git commit -m 'Add some amazing feature')
-4. Push to the branch (git push origin feature/amazing-feature)
-5. Open a Pull Request
+---
 
-## License
+## 🤝 Contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+1. Fork the repo
+2. Create your feature branch:
 
-## Acknowledgments
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Commit your changes:
 
-• Thanks to all contributors who have helped shape DevPath CLI
-• Inspired by the need to make developer learning more efficient and contextual
+   ```bash
+   git commit -m "Add your message here"
+   ```
+4. Push and open a pull request
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.
+
+---
+
+> Built with ❤️ for developers who love to learn.
 
 
-Built with ❤️ for developers who love to learn
+---
+
