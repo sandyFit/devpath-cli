@@ -80,7 +80,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   // Frameworks
   "react": {
     tutorials: [
@@ -162,7 +162,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   "vue.js": {
     tutorials: [
       {
@@ -189,7 +189,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   // Backend
   "nodejs": {
     tutorials: [
@@ -223,7 +223,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   "express": {
     tutorials: [
       {
@@ -250,7 +250,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   // AWS
   "aws": {
     tutorials: [
@@ -278,7 +278,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   "aws-cdk": {
     tutorials: [
       {
@@ -305,7 +305,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   // Tools
   "docker": {
     tutorials: [
@@ -333,7 +333,7 @@ export const resourcesDatabase = {
       }
     ]
   },
-  
+
   "typescript": {
     tutorials: [
       {
@@ -359,6 +359,40 @@ export const resourcesDatabase = {
         difficulty: "Intermediate to Advanced"
       }
     ]
+  },
+
+  // Adding MongoDB here - this was likely the missing entry causing the error
+  "mongodb": {
+    tutorials: [
+      {
+        title: "MongoDB Crash Course",
+        description: "Learn the basics of MongoDB in just one video",
+        url: "https://www.youtube.com/watch?v=-56x56UppqQ",
+        difficulty: "Beginner"
+      },
+      {
+        title: "MongoDB University",
+        description: "Free online courses from MongoDB",
+        url: "https://university.mongodb.com/",
+        difficulty: "All levels"
+      }
+    ],
+    documentation: [
+      {
+        title: "MongoDB Documentation",
+        description: "Official MongoDB documentation",
+        url: "https://docs.mongodb.com/",
+        difficulty: "All levels"
+      }
+    ],
+    articles: [
+      {
+        title: "MongoDB Atlas Best Practices",
+        description: "Best practices for using MongoDB Atlas",
+        url: "https://www.mongodb.com/blog/post/atlas-best-practices",
+        difficulty: "Intermediate"
+      }
+    ]
   }
 };
 
@@ -372,7 +406,7 @@ export const resourcesDatabase = {
 export function getResourcesForTechnology(technology, type = 'all', limit = 5) {
   // Normalize technology name for lookup
   const techKey = technology.toLowerCase().replace(/[^a-z0-9-\.]/g, '');
-  
+
   // Check if we have resources for this technology
   if (!resourcesDatabase[techKey]) {
     return {
@@ -381,31 +415,31 @@ export function getResourcesForTechnology(technology, type = 'all', limit = 5) {
       articles: []
     };
   }
-  
+
   // Get resources based on type
   const resources = {};
-  
+
   if (type === 'all' || type === 'tutorials') {
     resources.tutorials = resourcesDatabase[techKey].tutorials || [];
     if (limit) {
       resources.tutorials = resources.tutorials.slice(0, limit);
     }
   }
-  
+
   if (type === 'all' || type === 'documentation') {
     resources.documentation = resourcesDatabase[techKey].documentation || [];
     if (limit) {
       resources.documentation = resources.documentation.slice(0, limit);
     }
   }
-  
+
   if (type === 'all' || type === 'articles') {
     resources.articles = resourcesDatabase[techKey].articles || [];
     if (limit) {
       resources.articles = resources.articles.slice(0, limit);
     }
   }
-  
+
   return resources;
 }
 
@@ -421,49 +455,49 @@ export function searchResources(query, limit = 5) {
     documentation: [],
     articles: []
   };
-  
+
   const normalizedQuery = query.toLowerCase();
-  
+
   // Search through all technologies
   Object.values(resourcesDatabase).forEach(techResources => {
     // Search tutorials
     if (techResources.tutorials) {
       techResources.tutorials.forEach(tutorial => {
-        if (tutorial.title.toLowerCase().includes(normalizedQuery) || 
-            tutorial.description.toLowerCase().includes(normalizedQuery)) {
+        if (tutorial.title.toLowerCase().includes(normalizedQuery) ||
+          tutorial.description.toLowerCase().includes(normalizedQuery)) {
           results.tutorials.push(tutorial);
         }
       });
     }
-    
+
     // Search documentation
     if (techResources.documentation) {
       techResources.documentation.forEach(doc => {
-        if (doc.title.toLowerCase().includes(normalizedQuery) || 
-            doc.description.toLowerCase().includes(normalizedQuery)) {
+        if (doc.title.toLowerCase().includes(normalizedQuery) ||
+          doc.description.toLowerCase().includes(normalizedQuery)) {
           results.documentation.push(doc);
         }
       });
     }
-    
+
     // Search articles
     if (techResources.articles) {
       techResources.articles.forEach(article => {
-        if (article.title.toLowerCase().includes(normalizedQuery) || 
-            article.description.toLowerCase().includes(normalizedQuery)) {
+        if (article.title.toLowerCase().includes(normalizedQuery) ||
+          article.description.toLowerCase().includes(normalizedQuery)) {
           results.articles.push(article);
         }
       });
     }
   });
-  
+
   // Limit results
   if (limit) {
     results.tutorials = results.tutorials.slice(0, limit);
     results.documentation = results.documentation.slice(0, limit);
     results.articles = results.articles.slice(0, limit);
   }
-  
+
   return results;
 }
 

@@ -44,87 +44,90 @@ function identifyProjectCharacteristics(analysis) {
     isDevOps: false,
     isInfraAsCode: false
   };
-  
-  // Check tech stack for frameworks
-  if (analysis.techStack.frameworks) {
-    const frameworkNames = analysis.techStack.frameworks.map(f => f.name.toLowerCase());
-    
-    // Web frameworks
-    if (frameworkNames.some(name => ['react', 'vue.js', 'angular', 'next.js', 'gatsby'].includes(name))) {
-      characteristics.isWebApp = true;
+
+  // Add null check before accessing techStack properties
+  if (analysis && analysis.techStack) {
+    // Check tech stack for frameworks
+    if (analysis.techStack.frameworks && Array.isArray(analysis.techStack.frameworks)) {
+      const frameworkNames = analysis.techStack.frameworks.map(f => f.name.toLowerCase());
+
+      // Web frameworks
+      if (frameworkNames.some(name => ['react', 'vue.js', 'angular', 'next.js', 'gatsby'].includes(name))) {
+        characteristics.isWebApp = true;
+      }
+
+      // Backend frameworks
+      if (frameworkNames.some(name => ['express', 'nestjs', 'koa', 'fastify'].includes(name))) {
+        characteristics.isBackendAPI = true;
+      }
+
+      // Full stack frameworks
+      if (frameworkNames.some(name => ['next.js', 'nuxt.js', 'sapper'].includes(name))) {
+        characteristics.isFullStack = true;
+      }
+
+      // Static site generators
+      if (frameworkNames.some(name => ['gatsby', 'eleventy', 'jekyll'].includes(name))) {
+        characteristics.isStaticSite = true;
+      }
+
+      // Infrastructure as Code
+      if (frameworkNames.some(name => ['aws cdk', 'terraform', 'cloudformation'].includes(name))) {
+        characteristics.isInfraAsCode = true;
+      }
     }
-    
-    // Backend frameworks
-    if (frameworkNames.some(name => ['express', 'nestjs', 'koa', 'fastify'].includes(name))) {
-      characteristics.isBackendAPI = true;
-    }
-    
-    // Full stack frameworks
-    if (frameworkNames.some(name => ['next.js', 'nuxt.js', 'sapper'].includes(name))) {
-      characteristics.isFullStack = true;
-    }
-    
-    // Static site generators
-    if (frameworkNames.some(name => ['gatsby', 'eleventy', 'jekyll'].includes(name))) {
-      characteristics.isStaticSite = true;
-    }
-    
-    // Infrastructure as Code
-    if (frameworkNames.some(name => ['aws cdk', 'terraform', 'cloudformation'].includes(name))) {
-      characteristics.isInfraAsCode = true;
+
+    // Check tech stack for tools
+    if (analysis.techStack.tools && Array.isArray(analysis.techStack.tools)) {
+      const toolNames = analysis.techStack.tools.map(t => t.name.toLowerCase());
+
+      // Database related
+      if (toolNames.some(name => ['sequelize', 'mongoose', 'typeorm', 'prisma'].includes(name))) {
+        characteristics.hasDatabase = true;
+      }
+
+      // Containerization
+      if (toolNames.some(name => ['docker', 'kubernetes', 'docker-compose'].includes(name))) {
+        characteristics.isContainerized = true;
+      }
+
+      // CI/CD
+      if (toolNames.some(name => ['jenkins', 'travis', 'circleci', 'github actions'].includes(name))) {
+        characteristics.hasCICD = true;
+      }
+
+      // Authentication
+      if (toolNames.some(name => ['passport', 'auth0', 'jwt', 'oauth'].includes(name))) {
+        characteristics.isAuthentication = true;
+      }
+
+      // File storage
+      if (toolNames.some(name => ['multer', 'aws-sdk', 'firebase-storage'].includes(name))) {
+        characteristics.isFileStorage = true;
+      }
+
+      // AI/ML
+      if (toolNames.some(name => ['tensorflow', 'pytorch', 'scikit-learn', 'huggingface'].includes(name))) {
+        characteristics.isAI = true;
+      }
+
+      // DevOps
+      if (toolNames.some(name => ['terraform', 'ansible', 'puppet', 'chef'].includes(name))) {
+        characteristics.isDevOps = true;
+      }
+
+      // Check for serverless indicators
+      if (toolNames.some(name =>
+        name.includes('serverless') ||
+        name.includes('lambda') ||
+        name.includes('netlify') ||
+        name.includes('vercel')
+      )) {
+        characteristics.isServerless = true;
+      }
     }
   }
-  
-  // Check tech stack for tools
-  if (analysis.techStack.tools) {
-    const toolNames = analysis.techStack.tools.map(t => t.name.toLowerCase());
-    
-    // Database related
-    if (toolNames.some(name => ['sequelize', 'mongoose', 'typeorm', 'prisma'].includes(name))) {
-      characteristics.hasDatabase = true;
-    }
-    
-    // Containerization
-    if (toolNames.some(name => ['docker', 'kubernetes', 'docker-compose'].includes(name))) {
-      characteristics.isContainerized = true;
-    }
-    
-    // CI/CD
-    if (toolNames.some(name => ['jenkins', 'travis', 'circleci', 'github actions'].includes(name))) {
-      characteristics.hasCICD = true;
-    }
-    
-    // Authentication
-    if (toolNames.some(name => ['passport', 'auth0', 'jwt', 'oauth'].includes(name))) {
-      characteristics.isAuthentication = true;
-    }
-    
-    // File storage
-    if (toolNames.some(name => ['multer', 'aws-sdk', 'firebase-storage'].includes(name))) {
-      characteristics.isFileStorage = true;
-    }
-    
-    // AI/ML
-    if (toolNames.some(name => ['tensorflow', 'pytorch', 'scikit-learn', 'huggingface'].includes(name))) {
-      characteristics.isAI = true;
-    }
-    
-    // DevOps
-    if (toolNames.some(name => ['terraform', 'ansible', 'puppet', 'chef'].includes(name))) {
-      characteristics.isDevOps = true;
-    }
-  }
-  
-  // Check for serverless indicators
-  if (analysis.techStack.tools && analysis.techStack.tools.some(t => 
-    t.name.toLowerCase().includes('serverless') || 
-    t.name.toLowerCase().includes('lambda') ||
-    t.name.toLowerCase().includes('netlify') ||
-    t.name.toLowerCase().includes('vercel')
-  )) {
-    characteristics.isServerless = true;
-  }
-  
+
   return characteristics;
 }
 

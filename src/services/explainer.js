@@ -12,7 +12,7 @@ export async function explainProject(projectPath, options) {
   let fileContent = null;
   let isFile = false;
   let targetPath = projectPath;
-  
+
   /// Check if we're explaining a specific file
   if (options.file) {
     targetPath = path.resolve(projectPath, options.file);
@@ -45,7 +45,6 @@ export async function explainProject(projectPath, options) {
     }
   }
 
-  
   // If we're explaining a component, find relevant files
   let componentFiles = [];
   if (options.component) {
@@ -54,13 +53,13 @@ export async function explainProject(projectPath, options) {
       throw new Error(`Component "${options.component}" not found in the project`);
     }
   }
-  
+
   // If not explaining a specific file or component, analyze the whole project
   let analysis = null;
   if (!isFile && !options.component) {
     analysis = await analyzeProject(projectPath, { depth: 3 });
   }
-  
+
   // Generate explanation based on what we're explaining
   if (isFile) {
     return explainFile(targetPath, fileContent, options.detail);
@@ -80,13 +79,13 @@ export async function explainProject(projectPath, options) {
 async function findComponentFiles(projectPath, componentName) {
   // This is a simplified implementation
   // In a real implementation, this would be more sophisticated
-  
+
   const componentPattern = new RegExp(componentName, 'i');
   const files = [];
-  
+
   try {
     const allFiles = await fs.readdir(projectPath, { recursive: true });
-    
+
     for (const file of allFiles) {
       if (componentPattern.test(file)) {
         files.push(path.join(projectPath, file));
@@ -95,7 +94,7 @@ async function findComponentFiles(projectPath, componentName) {
   } catch (error) {
     // Handle error or just return empty array
   }
-  
+
   return files;
 }
 
@@ -136,7 +135,6 @@ async function findSimilarFiles(projectPath, fileName) {
   return results;
 }
 
-
 /**
  * Explains a specific file
  * @param {string} filePath - Path to the file
@@ -148,7 +146,7 @@ async function explainFile(filePath, content, detailLevel) {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath).toLowerCase();
   console.log(`Searching for ${fileName} in ${filePath}...`);
-  
+
   // Determine file type
   let fileType = 'unknown';
   if (fileExt === '.js') fileType = 'JavaScript';
@@ -160,22 +158,22 @@ async function explainFile(filePath, content, detailLevel) {
   else if (fileExt === '.css') fileType = 'CSS';
   else if (fileExt === '.scss' || fileExt === '.sass') fileType = 'SASS';
   else if (fileExt === '.md') fileType = 'Markdown';
-  
+
   // Generate overview based on file type
   let overview = `This is a ${fileType} file named "${fileName}". `;
-  
+
   // Add more details based on file content and type
   if (fileType === 'JavaScript' || fileType === 'React JSX' || fileType === 'TypeScript' || fileType === 'React TypeScript') {
     if (content.includes('import') || content.includes('export')) {
       overview += 'It uses ES modules (import/export). ';
     }
-    
+
     if (content.includes('class ') && content.includes('extends')) {
       overview += 'It contains one or more component classes. ';
     } else if (content.includes('class ')) {
       overview += 'It contains one or more JavaScript classes. ';
     }
-    
+
     if (content.includes('function ')) {
       if (fileType.includes('React') && content.match(/function\s+[A-Z][a-zA-Z0-9_]*\s*\(/)) {
         overview += 'It defines one or more React functional components. ';
@@ -183,20 +181,45 @@ async function explainFile(filePath, content, detailLevel) {
         overview += 'It defines one or more functions. ';
       }
     }
-    
+
     if (content.includes('const ') || content.includes('let ')) {
       overview += 'It declares variables using modern JavaScript syntax. ';
     }
-    
+
+    // MongoDB/Mongoose specific detection
+    if (content.includes('mongoose') && (content.includes('connect') || content.includes('Schema'))) {
+      overview = `This is a ${fileType} file named "${fileName}" that handles MongoDB database operations using Mongoose ODM. `;
+
+      if (content.includes('mongoose.connect') || content.includes('mongoose.createConnection')) {
+        overview += 'It establishes a connection to a MongoDB database. ';
+      }
+
+      if (content.includes('Schema')) {
+        overview += 'It defines a Mongoose schema for data modeling. ';
+      }
+
+      if (content.includes('model(')) {
+        overview += 'It creates a Mongoose model for database operations. ';
+      }
+
+      if (content.includes('process.env')) {
+        overview += 'It uses environment variables for configuration. ';
+      }
+
+      if (content.includes('try') && content.includes('catch')) {
+        overview += 'It implements error handling for database operations. ';
+      }
+    }
+
     // React specific detection
     if (fileType.includes('React') || content.includes('import React') || content.includes('from "react"') || content.includes("from 'react'")) {
       overview += 'This file is part of a React application. ';
-      
+
       // Check for hooks
       if (content.includes('useState') || content.includes('useEffect') || content.includes('useContext')) {
         overview += 'It uses React hooks for state management and side effects. ';
       }
-      
+
       // Check for JSX
       if (content.includes('return (') && (content.includes('<') && content.includes('>'))) {
         overview += 'It returns JSX elements to render UI components. ';
@@ -218,7 +241,7 @@ async function explainFile(filePath, content, detailLevel) {
       overview += 'The JSON content appears to be invalid. ';
     }
   }
-  
+
   // Extract code examples based on detail level
   const codeExamples = [];
   if (detailLevel === 'advanced' || detailLevel === 'intermediate') {
@@ -243,7 +266,7 @@ async function explainFile(filePath, content, detailLevel) {
           });
         }
       }
-      
+
       // Extract hooks usage if present
       const hooksMatches = content.match(/const\s+\[[^\]]+\]\s*=\s*useState\([^)]*\)/);
       if (hooksMatches && hooksMatches.length > 0) {
@@ -255,11 +278,19 @@ async function explainFile(filePath, content, detailLevel) {
       }
     }
   }
-  
+
   // Suggest next steps based on file type
   let nextSteps = [];
-  
-  if (fileType.includes('React')) {
+
+  // MongoDB/Mongoose specific recommendations
+  if (content.includes('mongoose')) {
+    nextSteps = [
+      'Read the Mongoose documentation: https://mongoosejs.com/docs/',
+      'Learn about MongoDB connection options and best practices: https://mongoosejs.com/docs/connections.html',
+      'Understand environment variables in Node.js applications: https://nodejs.org/api/process.html#process_process_env',
+      'Explore error handling patterns for database connections: https://thecodebarbarian.com/mongoose-error-handling.html'
+    ];
+  } else if (fileType.includes('React')) {
     nextSteps = [
       'Read the React documentation to understand component lifecycle and hooks: https://reactjs.org/docs/hooks-intro.html',
       'Examine how this component connects with other components in the application',
@@ -284,17 +315,17 @@ async function explainFile(filePath, content, detailLevel) {
       'Look for patterns and best practices in the code'
     ];
   }
-  
+
   return {
     overview,
     details: [
       {
         title: 'File Purpose',
-        description: `This file appears to be part of the project's ${getFilePurpose(filePath, fileType)}.`
+        description: `This file appears to be part of the project's ${getFilePurpose(filePath, fileType, content)}.`
       },
       {
         title: 'Complexity',
-        description: `The file has ${content.split('\n').length} lines of code, making it ${getComplexityLevel(content)} complex.`
+        description: `The file has ${content.split('\n').length} lines of code, making it ${getComplexityLevel(content)}.`
       }
     ],
     codeExamples,
@@ -383,13 +414,6 @@ async function explainComponent(projectPath, files, detailLevel) {
   };
 }
 
-
-/**
- * Explains the whole project
- * @param {Object} analysis - Project analysis data
- * @param {string} detailLevel - Level of detail for the explanation
- * @returns {Promise<Object>} Project explanation
- */
 /**
  * Explains the whole project
  * @param {Object} analysis - Project analysis data
@@ -446,21 +470,38 @@ async function explainWholeProject(analysis, detailLevel) {
   };
 }
 
-
-
 /**
  * Determines the purpose of a file based on its path and type
  * @param {string} filePath - Path to the file
  * @param {string} fileType - Type of the file
+ * @param {string} content - Content of the file
  * @returns {string} Purpose of the file
  */
-function getFilePurpose(filePath, fileType) {
+function getFilePurpose(filePath, fileType, content) {
   const fileName = path.basename(filePath);
-  
+
   if (fileName === 'package.json') return 'dependency management and project configuration';
   if (fileName === 'README.md') return 'documentation';
   if (fileName.includes('config')) return 'configuration';
-  
+
+  // MongoDB/Mongoose specific paths and files
+  if (content) {
+    console.log("File content includes 'mongoose':", content.includes('mongoose'));
+    console.log("File content includes 'connect':", content.includes('connect'));
+    console.log("File content includes 'Schema':", content.includes('Schema'));
+
+    if (content.includes('mongoose') && (content.includes('connect') || content.includes('Schema'))) {
+      return 'database integration with MongoDB';
+    }
+  }
+
+  if (fileName === 'db.js' || fileName.includes('database') || fileName.includes('mongo')) {
+    return 'database connection configuration';
+  }
+  if (filePath.includes('models') || filePath.includes('schemas')) {
+    return 'data modeling and schema definition';
+  }
+
   // React specific paths
   if (fileType.includes('React') || filePath.includes('components')) {
     if (fileName.startsWith('App') || fileName === 'App.jsx' || fileName === 'App.tsx') {
@@ -471,13 +512,13 @@ function getFilePurpose(filePath, fileType) {
     if (filePath.includes('hooks')) return 'custom React hooks';
     if (filePath.includes('context')) return 'React context providers';
   }
-  
+
   if (filePath.includes('src/services')) return 'backend services';
   if (filePath.includes('src/utils')) return 'utility functions';
   if (filePath.includes('src/models')) return 'data models';
   if (filePath.includes('test')) return 'testing';
   if (filePath.includes('styles') || fileType === 'CSS' || fileType === 'SASS') return 'styling';
-  
+
   return 'application logic';
 }
 
@@ -488,8 +529,9 @@ function getFilePurpose(filePath, fileType) {
  */
 function getComplexityLevel(content) {
   const lines = content.split('\n').length;
-  
-  if (lines < 50) return 'relatively simple';
-  if (lines < 200) return 'moderately';
-  return 'highly';
+
+  if (lines < 30) return 'simple in complexity';
+  if (lines < 100) return 'moderately complex';
+  if (lines < 300) return 'fairly complex';
+  return 'highly complex';
 }
