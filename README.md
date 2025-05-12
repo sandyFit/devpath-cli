@@ -2,7 +2,7 @@
 
 A developer learning assistant that analyzes projects, recommends resources, and helps you grow as a developer.
 
-![DevPath CLI Banner](./assets/devpathjpg)
+![DevPath CLI Banner](./assets/devpath.jpg)
 
 ## Overview
 
